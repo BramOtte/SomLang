@@ -20,13 +20,13 @@ class Buffer:
     return self.current
 
 
-def lex(filename: str) -> list[Token]:
+def lex(filename: str) -> "list[Token]":
   with open(filename) as file:
     return lex_file(file)
 
 
-def lex_file(file: io.TextIOWrapper) -> list[Token]:
-  tokens: list[Token] = []
+def lex_file(file: io.TextIOWrapper) -> "list[Token]":
+  tokens: "list[Token]"= []
   keywords = {
     "uint": Kind.VAR_TYPE,
     "char": Kind.VAR_TYPE,

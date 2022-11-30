@@ -4,7 +4,7 @@ from tokens import Token, Kind
 
 class TokenBuffer:
 
-  def set(self, content: list[Token]):
+  def set(self, content: "list[Token]"):
     self.pos: int = 0
     self.done: bool = False
     self.content = content

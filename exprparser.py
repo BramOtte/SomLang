@@ -9,7 +9,7 @@ class ExpressionParser:
     self.buf = buf
 
   #Generically parses a binary op used for all the binop parsing
-  def generic_parse_binop(self, func: "Callable[[], ast.Expression]", kinds: list[Kind]) -> ast.BinOp:
+  def generic_parse_binop(self, func: "Callable[[], ast.Expression]", kinds: "list[Kind]") -> ast.BinOp:
     expr1 = func()
     while self.buf.current.kind in kinds:
       op: Token = self.buf.current

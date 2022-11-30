@@ -78,8 +78,8 @@ class Parser:
     args= self.parse_arguments()
     return ast.MacroDeclaration(name, args, self.parse_block())
 
-  def parse_arguments(self) -> list[ast.Expression]:
-    arguments: list[ast.Expression] = []
+  def parse_arguments(self) -> "list[ast.Expression]":
+    arguments: "list[ast.Expression]" = []
     self.buf.expect(Kind.OPEN_PARAN)
     if self.buf.current.eq(Kind.CLOSE_PARAN):
       self.buf.next()

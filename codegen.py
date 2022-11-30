@@ -13,7 +13,7 @@ from errortools import gen_error, gen_errormsg
 class Asm:
 
   def __init__(self):
-    self.instrs: list[str] = []
+    self.instrs: "list[str]" = []
 
   def put_li(self, dest: int, value: int):
     self.instrs.append("IMM R" + str(dest) + " " + str(value))
@@ -61,7 +61,7 @@ class CodeGeneration:
     self.live_range: LiveRangeGeneration = LiveRangeGeneration()
     self.label = 0
 
-  def gen(self, ast_nodes: list[ast.Statement]) -> Asm:
+  def gen(self, ast_nodes: "list[ast.Statement]") -> Asm:
     #Creates ranges of which lines the variable exists in
     self.live_range.gen(ast_nodes)
 
