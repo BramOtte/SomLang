@@ -13,7 +13,7 @@ class RegisterHandler:
         return i+1
 
     assert False
-        
+
   def dealloc_reg(self, reg: int):
     self.regs[reg-1] = False
 
@@ -35,8 +35,21 @@ class LiveRangeGeneration:
       elif isinstance(node, ast.Block):
         self.gen_block_ranges(node)
       elif isinstance(node, ast.IfStatement):
-        self.gen_expr(node.condition)
-        self.gen_block_ranges(node.block)
+        self.gen_if(node)
+      elif isinstance(node, ast.WhileStatement):
+        self.gen_while(node)
+        
+  def gen_while(self, node: ast.WhileStatement):
+    self.gen_expr(node.condition)
+    self.gen_block_ranges(node.block)
+          
+  def gen_if(self, node: ast.IfStatement):
+    self.gen_expr(node.condition)
+    self.gen_block_ranges(node.block)
+    if isinstance(node.else_, ast.Block):
+      self.gen_block_ranges(node.else_)
+    elif isinstance(node.else_, ast.IfStatement):
+      self.gen_if(node.else_)
 
   def gen(self, ast_nodes: list[ast.Statement]):
     self.gen_var(ast_nodes)
@@ -49,6 +62,7 @@ class LiveRangeGeneration:
       for i in range(arr[0], arr[len(arr)-1]+1):
         new_set.append(i)
       ranges_new[live_range] = new_set
+      
       
     self.ranges = ranges_new
     l: dict[int, list[str]] = {}

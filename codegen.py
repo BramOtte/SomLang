@@ -4,6 +4,7 @@
 #USE AS A TEMPLATE TO UNDERSTAND HOW TO GO THROUGH THE AST NODES
 #AND GENERATE ASSEMBLY
 from typing import Optional
+
 import asts as ast
 from vargeneration import LiveRangeGeneration
 from errortools import gen_error, gen_errormsg
@@ -39,6 +40,9 @@ class Asm:
 
   def put_branch(self, inst: str, label: str, left: int, right: int):
     self.instrs.append(f"{inst} {label} R{left} R{right}")
+
+  def put_jmp(self, label: str):
+    self.instrs.append("JMP " + label)
     
   def put_label(self, label: str):
     self.instrs.append(label)
@@ -69,16 +73,50 @@ class CodeGeneration:
       self.gen_statement(node)
     return self.asm
 
-  def gen_label(self):
+  def gen_statement(self, statement: ast.Statement):
+    if isinstance(statement, ast.Declaration):
+      self.gen_declaration(statement)
+    elif isinstance(statement, ast.Assignment):
+      self.gen_assignment(statement)
+    elif isinstance(statement, ast.IfStatement):
+      self.gen_ifstatement(statement, None, None)
+    elif isinstance(statement, ast.WhileStatement):
+      self.gen_whilestatement(statement)
+    else:
+      gen_errormsg("sad")
+
+  def gen_whilestatement(self, whileStatement: ast.WhileStatement):
+    end_label: str = self.gen_label()
+    start_label: str = self.gen_label()
+    self.asm.put_label(start_label)
+    self.gen_condition(whileStatement.condition, end_label)
+    self.gen_block(whileStatement.block)
+    self.asm.put_jmp(start_label)
+    self.asm.put_label(end_label)
+
+  def gen_label(self) -> str:
     self.label += 1
     return ".IF_" + str(self.label)
 
-  def gen_ifstatement(self, ifStatement: ast.IfStatement):
-    label: str = self.gen_label()
+  def gen_ifstatement(self, ifStatement: ast.IfStatement, label: Optional[str], end_label: Optional[str]):
+    if label == None:
+      label = self.gen_label()
+    if end_label == None and ifStatement.else_ != None:
+      end_label = self.gen_label()
     self.gen_condition(ifStatement.condition, label)
-    for statement in ifStatement.block.content:
-      self.gen_statement(statement)
+    self.gen_block(ifStatement.block)
+    if end_label != None:
+      self.asm.put_jmp(end_label)
     self.asm.put_label(label)
+      
+    if isinstance(ifStatement.else_, ast.Block):
+      for statement in ifStatement.else_.content:
+        self.gen_statement(statement)
+      assert end_label is not None
+      self.asm.put_label(end_label)
+    elif isinstance(ifStatement.else_, ast.IfStatement):
+      self.gen_ifstatement(ifStatement.else_, None, end_label)
+    
   
   def gen_condition(self, condition: ast.Expression, end_block_label: str):
     assert isinstance(condition, ast.BinOp)
@@ -99,16 +137,11 @@ class CodeGeneration:
       self.asm.put_branch("BRE", end_block_label, reg1, reg2)
     else:
       gen_error(condition.op, "Unknown condition operator used!")
+                
 
-  def gen_statement(self, statement: ast.Statement):
-    if isinstance(statement, ast.Declaration):
-      self.gen_declaration(statement)
-    elif isinstance(statement, ast.Assignment):
-      self.gen_assignment(statement)
-    elif isinstance(statement, ast.IfStatement):
-      self.gen_ifstatement(statement)
-    else:
-      gen_errormsg("sad")
+  def gen_block(self, block: ast.Block):
+    for statement in block.content:
+      self.gen_statement(statement)
 
   def gen_assignment(self, assignment: ast.Assignment):
     varname: str = assignment.identifier.token.value

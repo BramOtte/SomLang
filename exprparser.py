@@ -1,3 +1,4 @@
+from typing import Callable
 from tokens import Token, Kind
 from errortools import gen_error, gen_errormsg
 import asts as ast
@@ -8,13 +9,14 @@ class ExpressionParser:
     self.buf = buf
 
   #Generically parses a binary op used for all the binop parsing
-  def generic_parse_binop(self, func, kinds: [Kind]) -> ast.BinOp:
+  def generic_parse_binop(self, func: "Callable[[], ast.Expression]", kinds: list[Kind]) -> ast.BinOp:
     expr1 = func()
     while self.buf.current.kind in kinds:
       op: Token = self.buf.current
       self.buf.next()
       expr2 = func()
       expr1 = ast.BinOp(expr1, op, expr2)
+    assert isinstance(expr1, ast.BinOp)
     return expr1
    
   def parse(self) -> ast.Expression:
@@ -49,6 +51,3 @@ class ExpressionParser:
       return expr
     else:
       gen_error(current, "Failed to parse expression!")
-    
-    
-    

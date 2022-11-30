@@ -66,11 +66,11 @@ class IfStatement(Statement):
   def __init__(self, condition: Expression, block: Block, _else: "Union[None, Block, IfStatement]"):
     self.condition = condition
     self.block = block
-    self._else = _else
+    self.else_ = _else
 
   def __str__(self):
     return "If\n\tCond: " + str(self.condition) + "\n\tBlock: " + str(
-      self.block) + "\n\telse: " + str(self._else)
+      self.block) + "\n\telse: " + str(self.else_)
 
 class WhileStatement(Statement):
 
