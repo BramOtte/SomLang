@@ -16,8 +16,8 @@ class ExpressionParser:
       self.buf.next()
       expr2 = func()
       expr1 = ast.BinOp(expr1, op, expr2)
-    assert isinstance(expr1, ast.BinOp)
-    return expr1
+    
+    return expr1 #type: ignore
    
   def parse(self) -> ast.Expression:
     return self.generic_parse_binop(
