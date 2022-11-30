@@ -1,6 +1,6 @@
-from token import Token, Kind
+from tokens import Token, Kind
 from errortools import gen_error, gen_errormsg
-import ast
+import asts as ast
 import tokenbuffer
 
 class ExpressionParser:

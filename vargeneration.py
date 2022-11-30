@@ -1,4 +1,5 @@
-import ast
+import asts as ast
+from typing import Union
 
 class RegisterHandler:
   def __init__(self):
@@ -10,6 +11,8 @@ class RegisterHandler:
       if not reg:
         self.regs[i] = True
         return i+1
+
+    assert False
         
   def dealloc_reg(self, reg: int):
     self.regs[reg-1] = False
@@ -17,15 +20,15 @@ class RegisterHandler:
 class LiveRangeGeneration:
   def __init__(self):
     self.reghdlr: RegisterHandler = RegisterHandler()
-    self.var_allocation = {}
-    self.ranges = {}
-    self.total_reg_used = 0
+    self.var_allocation: dict[int, dict[str, int]] = {}
+    self.ranges: dict[str, list[int]] = {}
+    self.total_reg_used: int = 0
 
   def get_reg(self, lineno: int, varname: str) -> int:
     #returns the register of a variable at that line number
     return self.var_allocation[lineno][varname]
 
-  def gen_var(self, ast_nodes):
+  def gen_var(self, ast_nodes: list[ast.Statement]):
     for node in ast_nodes:
       if isinstance(node, ast.Declaration) or isinstance(node, ast.Assignment):
         self.gen_ranges(node)
@@ -35,29 +38,28 @@ class LiveRangeGeneration:
         self.gen_expr(node.condition)
         self.gen_block_ranges(node.block)
 
-  def gen(self, ast_nodes):
+  def gen(self, ast_nodes: list[ast.Statement]):
     self.gen_var(ast_nodes)
     #new_ranges = {}
     #for live_range, arr in self.ranges.items():
       #new_ranges[live_range] = [ arr[0], arr[len(arr)-1] ]
-    ranges_new = {}
+    ranges_new: dict[str, list[int]] = {}
     for live_range, arr in self.ranges.items():
-      new_set = []
+      new_set: list[int] = []
       for i in range(arr[0], arr[len(arr)-1]+1):
         new_set.append(i)
       ranges_new[live_range] = new_set
       
     self.ranges = ranges_new
-    print(self.ranges)
-    l = {}
+    l: dict[int, list[str]] = {}
     for live_range, arr in self.ranges.items():
       for lineno in arr:
         if lineno not in l:
           l[lineno] = [live_range]
         else:
           l[lineno].append(live_range)
-    alloc = {}
-    var_alloc = {}
+    alloc: dict[int, dict[str, int]] = {}
+    var_alloc: dict[str, int] = {}
     for lineno, vars in l.items():
       alloc[lineno] = {}
       tmp = var_alloc.copy()
@@ -81,9 +83,10 @@ class LiveRangeGeneration:
   def gen_block_ranges(self, block: ast.Block):
     self.gen_var(block.content)
     
-  def gen_ranges(self, assign_or_dec_node):
+  def gen_ranges(self, assign_or_dec_node: Union[ast.Assignment, ast.Declaration]):
     self.gen_expr(assign_or_dec_node.identifier)
-    self.gen_expr(assign_or_dec_node.expr)
+    if assign_or_dec_node.expr is not None:
+      self.gen_expr(assign_or_dec_node.expr)
 
   def gen_expr(self, expr_node: ast.Expression):
     if isinstance(expr_node, ast.Number) or isinstance(expr_node, ast.Identifier):

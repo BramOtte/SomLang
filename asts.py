@@ -1,4 +1,4 @@
-import token
+import tokens as token
 from typing import Union, Optional
 
 
@@ -52,7 +52,7 @@ class Statement:
 
 class Block:
 
-  def __init__(self, content: [Statement] = None):
+  def __init__(self, content: Optional[list[Statement]] = None):
     self.content = content if content is not None else []
 
   def __str__(self):
@@ -85,7 +85,7 @@ class WhileStatement(Statement):
 
 class MacroDeclaration(Statement):
 
-  def __init__(self, name: Identifier, arguments: [Expression], body: Block):
+  def __init__(self, name: Identifier, arguments: list[Expression], body: Block):
     self.name = name
     self.arguments = arguments
     self.body = body
@@ -97,7 +97,7 @@ class MacroDeclaration(Statement):
 
 class MacroCall(Statement):
 
-  def __init__(self, name: Identifier, arguments: [token.Token]):
+  def __init__(self, name: Identifier, arguments: list[Expression]):
     self.name = name
     self.arguments = arguments
 
@@ -108,7 +108,7 @@ class MacroCall(Statement):
 class Declaration(Statement):
 
   def __init__(self, vartype: token.Token, identifier: Identifier,
-               expr: Expression):
+               expr: Optional[Expression]):
     self.vartype = vartype
     self.identifier = identifier
     self.expr = expr
